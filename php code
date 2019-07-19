@@ -1,0 +1,49 @@
+public function UploadBeneficiaryDocs()
+    {
+        $post = $this->input->post();
+        
+        if($post)
+        {
+            // AGENCY_CODE/MRID/FILENAME
+            $file_identifier = $post['AGENCY_CODE'] . '/' . $post['MRID'];
+            
+            $config['allowed_types']        = 'pdf';
+            $config['upload_path']          = 'assets/modules/document/uploads/' . $file_identifier . '/';
+            
+            // mrid_fsid_visitid_datetime
+            $new_file_name = str_replace(' ', '_'
+                                , trim($post['SOC_START'] 
+                                    . '_' . $post['DOCUMENT'] 
+                                    . '_' . fn_get_current_date('YmdHis') 
+                                    . rand(1000, 9999)));
+            
+            $config['file_name']            = $new_file_name;
+
+            if (!is_dir($config['upload_path'])) {
+                mkdir($config['upload_path'], 0777, TRUE);
+            }
+            
+            $this->load->library('upload', $config);
+
+            
+            $data['file_data'] = array();
+            
+            $data['config_data'] = $config;
+                    
+            if(isset($_FILES["myfile"]))
+            {
+                if ( ! $this->upload->do_upload('myfile'))
+                {
+                    $data['file_data'] = $this->upload->display_errors();
+                }
+                else
+                {
+                    $data['file_data'] = $this->upload->data();
+                    $data['file_data']['file_url'] = $config['upload_path'] . $config['file_name'] . $data['file_data']['file_ext'];
+                }
+            }
+
+            echo json_encode($data);
+        }
+        
+    }
