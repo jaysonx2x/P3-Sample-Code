@@ -1,0 +1,21 @@
+public function getPreclaimRequestByCondition($condition=array(), $like_date=NULL)
+    {
+        if(count($condition)>0)
+        {
+            switch (intval($this->session->userdata(NIX_SESS_USER_TYPE_ID)))
+            {
+                case USER_TYPE_HHA:
+                    $this->db->where('ab.AGENCIES_ID = ' . intval($this->session->userdata(NIX_SESS_AGENCY_ID)));
+                    break;
+            }
+
+            ($like_date != NULL) ? $this->db->like('SUBMISSION_DATE', fn_format_date($like_date, 'Y-m'), 'after') : '';
+            
+            $this->db
+                ->distinct('ID')
+                ->join('agency_beneficiaries ab', 'ab.BENEFICIARIES_PROFILES_ID = PROFILES_ID');
+                
+            return $this->get_all_by($condition);
+            
+        } return FALSE;
+    }
