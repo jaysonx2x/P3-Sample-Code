@@ -1,0 +1,66 @@
+function doDeleteFileTypeAttachment(fileData) {
+    
+    var decodedFileData = atob(fileData);
+    
+    var toFormDialog = decodedFileData.split(',')[6];
+    
+    console.log('during file delete FILE_ID = ');
+    console.log(decodedFileData.split(',')[0]);
+    
+    console.log('during file delete toFormDialog = ');
+    console.log(toFormDialog);
+   
+    $.ajax({
+        type: 'POST',
+        url: NBM_SITE_URL + 'Documents/DeleteFileTypeAttachment',
+        dataType: 'json',
+        data: { 
+            FILE_ID     : fnBtoa3(decodedFileData.split(',')[0]),
+            FILE_URL    : decodedFileData.split(',')[1],
+            FILE_TYPE_ID: decodedFileData.split(',')[3],
+            PRECLAIM_ID : decodedFileData.split(',')[4],
+            UNLINK_ONLY : toFormDialog
+        }
+    })
+    .done(function(msg) {
+        
+        if(msg.status) {
+
+            var FILE_ID     = decodedFileData.split(',')[0];
+            var FILE_TYPE_ID= decodedFileData.split(',')[3];
+            var PRECLAIM_ID = decodedFileData.split(',')[4];
+            
+            /* the action is delete */
+            if(toFormDialog == 'false') {
+                
+                updateDocumentCounter(FILE_TYPE_ID, PRECLAIM_ID);
+            
+                $('#file_attachment_container_' + FILE_TYPE_ID + '_' + PRECLAIM_ID).find('input').first().prop('checked', true);
+                $('#file_attachment_container_' + FILE_TYPE_ID + '_' + PRECLAIM_ID).find('a').first().addClass('active');
+
+                $('#attachment_' + PRECLAIM_ID + '_' + FILE_TYPE_ID + '_' + FILE_ID).remove();
+                
+                fnShowNotification('Success', 'Deleted successfully.');
+                
+            } else {
+                
+                currentDocsUploadedData = null;
+                
+                var id_indicator = PRECLAIM_ID + '_' + FILE_TYPE_ID + '_' + FILE_ID;
+                        
+                $('#DOCUMENT_UPLOAD_ATTACH_FILE_CONTAINER').removeClass('hidden');
+                $('#DOCUMENT_UPLOAD_ATTACHMENTS_CONTAINER').addClass('hidden');
+                
+                $('#attachment_'+ id_indicator).find('a').first().prop('href', 'javascript:void(0);');
+                $('#attachment_'+ id_indicator).find('a').first().removeAttr('target');
+                $('#attachment_'+ id_indicator).find('span').first().html('<h3>Attachment deleted</h3>');
+                
+                fnShowNotification('Success', 'Attachment removed.');
+                
+            }
+
+        }
+        
+    });
+    
+}
